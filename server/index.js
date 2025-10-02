@@ -7,22 +7,36 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const PDFDocument = require('pdfkit');
+const { execSync } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || 'college_management_secret_key_2024';
-const CLIENT_BUILD_PATH = path.join(__dirname, 'client', 'build'); // frontend folder
+const CLIENT_PATH = path.join(__dirname, 'client'); // React app folder
+const CLIENT_BUILD_PATH = path.join(CLIENT_PATH, 'build');
 
 // Middleware
 app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
 app.use(bodyParser.json());
 
-// Serve frontend if exists
+// === AUTOMATIC FRONTEND BUILD (for Render) ===
+if (!fs.existsSync(CLIENT_BUILD_PATH) && fs.existsSync(path.join(CLIENT_PATH, 'package.json'))) {
+  console.log('Building React frontend...');
+  try {
+    execSync('npm install', { cwd: CLIENT_PATH, stdio: 'inherit' });
+    execSync('npm run build', { cwd: CLIENT_PATH, stdio: 'inherit' });
+    console.log('React frontend built successfully!');
+  } catch (err) {
+    console.error('Failed to build frontend:', err);
+  }
+}
+
+// Serve frontend in production
 if (fs.existsSync(CLIENT_BUILD_PATH)) {
   app.use(express.static(CLIENT_BUILD_PATH));
 }
 
-// Root route for testing backend
+// Root route
 app.get('/', (req, res) => {
   if (fs.existsSync(path.join(CLIENT_BUILD_PATH, 'index.html'))) {
     res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
@@ -84,10 +98,9 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// === Your existing /api/... routes go here ===
-// (Login, Admissions, Fees, Hostel, Exams, Dashboard, PDFs)
+// === Your existing /api/... routes go here (Login, Admissions, Fees, Hostel, Exams, Dashboard, PDFs) ===
 
-// --- Catch all other routes (frontend SPA) ---
+// Catch-all route to serve frontend SPA
 if (fs.existsSync(CLIENT_BUILD_PATH)) {
   app.get('*', (req, res) => {
     res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
