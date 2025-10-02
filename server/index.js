@@ -1,4 +1,4 @@
-const express = require('express'); 
+const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
@@ -11,27 +11,11 @@ const PDFDocument = require('pdfkit');
 const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || 'college_management_secret_key_2024';
-const CLIENT_BUILD_PATH = path.join(__dirname, 'client', 'build');
 
-// Middleware
 app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
 app.use(bodyParser.json());
 
-// Serve frontend if exists
-if (fs.existsSync(CLIENT_BUILD_PATH)) {
-  app.use(express.static(CLIENT_BUILD_PATH));
-}
-
-// Root route
-app.get('/', (req, res) => {
-  if (fs.existsSync(path.join(CLIENT_BUILD_PATH, 'index.html'))) {
-    res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
-  } else {
-    res.send('ERP Management backend is running!');
-  }
-});
-
-// Data directory setup
+// Data directory
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
@@ -57,7 +41,7 @@ const initializeDataFiles = () => {
 
 initializeDataFiles();
 
-// Helper functions
+// Helpers
 const readData = (filename) => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));
 const writeData = (filename, data) => fs.writeFileSync(path.join(dataDir, filename), JSON.stringify(data, null, 2));
 
@@ -72,16 +56,16 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// === Your /api/... routes go here (Login, Admissions, Fees, Hostel, Exams, Dashboard, PDFs) ===
+// === Place your /api/... routes here (login, admissions, fees, hostel, exams, dashboard, PDFs) ===
 
-// Catch-all route for SPA frontend
+// Serve React frontend
+const CLIENT_BUILD_PATH = path.join(__dirname, '..', 'client', 'build');
 if (fs.existsSync(CLIENT_BUILD_PATH)) {
+  app.use(express.static(CLIENT_BUILD_PATH));
   app.get('*', (req, res) => {
     res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
   });
 }
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
