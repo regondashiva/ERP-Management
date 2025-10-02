@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
-// Initialize JSON files
+// Initialize JSON files (users.json, admissions.json, fees.json, etc.)
 const initializeDataFiles = () => {
   const files = {
     'users.json': [
@@ -56,7 +56,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// === Place your /api/... routes here (login, admissions, fees, hostel, exams, dashboard, PDFs) ===
+// === Keep all your /api/... routes (login, admissions, fees, hostel, exams, dashboard, PDFs) here ===
 
 // Serve React frontend
 const CLIENT_BUILD_PATH = path.join(__dirname, '..', 'client', 'build');
