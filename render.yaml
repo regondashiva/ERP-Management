@@ -1,0 +1,22 @@
+services:
+  # Backend API
+  - type: web
+    name: erp-management-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm run server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+    
+  # Frontend
+  - type: web
+    name: erp-management-client
+    env: node
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://erp-management-api.onrender.com

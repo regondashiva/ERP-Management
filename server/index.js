@@ -9,11 +9,14 @@ const { v4: uuidv4 } = require('uuid');
 const PDFDocument = require('pdfkit');
 
 const app = express();
-const PORT = 5001;
-const JWT_SECRET = 'college_management_secret_key_2024';
+const PORT = process.env.PORT || 5001;
+const JWT_SECRET = process.env.JWT_SECRET || 'college_management_secret_key_2024';
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || '*',
+  credentials: true
+}));
 app.use(bodyParser.json());
 
 // Data directory setup
