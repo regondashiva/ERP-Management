@@ -7,31 +7,17 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const PDFDocument = require('pdfkit');
-const { execSync } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || 'college_management_secret_key_2024';
-const CLIENT_PATH = path.join(__dirname, 'client'); // React app folder
-const CLIENT_BUILD_PATH = path.join(CLIENT_PATH, 'build');
+const CLIENT_BUILD_PATH = path.join(__dirname, 'client', 'build');
 
 // Middleware
 app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
 app.use(bodyParser.json());
 
-// === AUTOMATIC FRONTEND BUILD (for Render) ===
-if (!fs.existsSync(CLIENT_BUILD_PATH) && fs.existsSync(path.join(CLIENT_PATH, 'package.json'))) {
-  console.log('Building React frontend...');
-  try {
-    execSync('npm install', { cwd: CLIENT_PATH, stdio: 'inherit' });
-    execSync('npm run build', { cwd: CLIENT_PATH, stdio: 'inherit' });
-    console.log('React frontend built successfully!');
-  } catch (err) {
-    console.error('Failed to build frontend:', err);
-  }
-}
-
-// Serve frontend in production
+// Serve frontend if exists
 if (fs.existsSync(CLIENT_BUILD_PATH)) {
   app.use(express.static(CLIENT_BUILD_PATH));
 }
@@ -49,7 +35,7 @@ app.get('/', (req, res) => {
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
-// Initialize data files
+// Initialize JSON files
 const initializeDataFiles = () => {
   const files = {
     'users.json': [
@@ -59,19 +45,7 @@ const initializeDataFiles = () => {
     ],
     'admissions.json': [],
     'fees.json': [],
-    'hostel.json': {
-      rooms: [
-        { roomNumber: '101', capacity: 2, occupied: 0, students: [] },
-        { roomNumber: '102', capacity: 2, occupied: 0, students: [] },
-        { roomNumber: '103', capacity: 3, occupied: 0, students: [] },
-        { roomNumber: '104', capacity: 3, occupied: 0, students: [] },
-        { roomNumber: '201', capacity: 2, occupied: 0, students: [] },
-        { roomNumber: '202', capacity: 2, occupied: 0, students: [] },
-        { roomNumber: '203', capacity: 3, occupied: 0, students: [] },
-        { roomNumber: '204', capacity: 3, occupied: 0, students: [] }
-      ],
-      allocations: []
-    },
+    'hostel.json': { rooms: [], allocations: [] },
     'exams.json': []
   };
 
@@ -98,9 +72,9 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// === Your existing /api/... routes go here (Login, Admissions, Fees, Hostel, Exams, Dashboard, PDFs) ===
+// === Your /api/... routes go here (Login, Admissions, Fees, Hostel, Exams, Dashboard, PDFs) ===
 
-// Catch-all route to serve frontend SPA
+// Catch-all route for SPA frontend
 if (fs.existsSync(CLIENT_BUILD_PATH)) {
   app.get('*', (req, res) => {
     res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
