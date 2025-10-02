@@ -1,12 +1,11 @@
 {
-  "name": "erp-management-backend",
+  "name": "erp-management",
   "version": "1.0.0",
   "main": "server/index.js",
   "scripts": {
-    "install-all": "npm install && cd client && npm install",
-    "build-client": "cd client && npm run build",
     "start": "node server/index.js",
-    "dev": "concurrently \"nodemon server/index.js\" \"cd client && npm start\""
+    "build-client": "cd client && npm install && npm run build",
+    "postinstall": "npm run build-client"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -20,5 +19,8 @@
   "devDependencies": {
     "concurrently": "^8.2.2",
     "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": "22.16.0"
   }
 }
